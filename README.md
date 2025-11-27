@@ -104,13 +104,13 @@ Add passwords to datasource JSON files.
 ```bash
 # Export from production
 ./datasource_export.sh \
-  -u https://grafana.example.com/api/datasources \
+  -u https://grafana.example.com \
   -t glsa_YourToken \
   -o ./backup
 
 # Import to staging
 ./datasource_import.sh \
-  -u https://staging.example.com/api/datasources \
+  -u https://staging.example.com \
   -t glsa_StagingToken \
   -o ./backup
 ```
@@ -190,7 +190,7 @@ Example: `datasource_1_Prometheus.json`
 **Using environment variables:**
 ```bash
 export GRAFANA_TOKEN="glsa_YourToken"
-export GRAFANA_URL="https://grafana.example.com/api/datasources"
+export GRAFANA_URL="https://grafana.example.com
 
 ./datasource_export.sh -u "$GRAFANA_URL" -t "$GRAFANA_TOKEN" -o ./backup
 ```
