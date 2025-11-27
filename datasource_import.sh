@@ -23,6 +23,9 @@ elif [ -n "$INPUT_FILE" ]; then
     IMPORT_MODE="file"
 fi
 
+# Remove trailing slash from GRAFANA_URL if present
+GRAFANA_URL="${GRAFANA_URL%/}"
+
 # Validate inputs
 info_msg "Starting Grafana datasource import..."
 info_msg "========================================"
@@ -55,7 +58,7 @@ elif [ "$IMPORT_MODE" = "file" ]; then
 fi
 
 # Test Grafana API connection
-test_grafana_connection "$GRAFANA_URL" "$GRAFANA_TOKEN"
+test_grafana_connection "${GRAFANA_URL}/api/datasources" "$GRAFANA_TOKEN"
 
 # Import datasources
 info_msg "Importing datasources..."
@@ -101,15 +104,15 @@ for datasource_file in "${JSON_FILES[@]}"; do
     # Get datasource name for better logging
     DS_NAME=$(jq -r '.name // "unknown"' "$datasource_file")
     
-    # Remove id and uid fields as they might conflict with existing datasources
-    # Create a clean version without these fields
+    # Remove id field as it might conflict with existing datasources
+    # Keep uid to preserve datasource identity
     TEMP_FILE=$(mktemp)
     verbose_msg "Created temporary file: $TEMP_FILE"
-    verbose_cmd "jq 'del(.id, .uid)' \"$datasource_file\" > \"$TEMP_FILE\""
-    jq 'del(.id, .uid)' "$datasource_file" > "$TEMP_FILE"
+    verbose_cmd "jq 'del(.id)' \"$datasource_file\" > \"$TEMP_FILE\""
+    jq 'del(.id)' "$datasource_file" > "$TEMP_FILE"
     
     # Build verbose curl command (with redacted token)
-    CURL_CMD="curl -s -w \"\\n%{http_code}\" -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer [REDACTED]\" --data-binary @\"$TEMP_FILE\" \"$GRAFANA_URL\""
+    CURL_CMD="curl -s -w \"\\n%{http_code}\" -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer [REDACTED]\" --data-binary @\"$TEMP_FILE\" \"${GRAFANA_URL}/api/datasources\""
     verbose_cmd "$CURL_CMD"
     
     # Import datasource via POST request
@@ -118,7 +121,7 @@ for datasource_file in "${JSON_FILES[@]}"; do
         -H "Content-Type: application/json" \
         -H "Authorization: Bearer $GRAFANA_TOKEN" \
         --data-binary @"$TEMP_FILE" \
-        "$GRAFANA_URL" 2>&1)
+        "${GRAFANA_URL}/api/datasources" 2>&1)
     
     HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
     RESPONSE_BODY=$(echo "$RESPONSE" | sed '$d')

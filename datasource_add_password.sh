@@ -27,16 +27,26 @@ Options:
 
 Examples:
   # Add password and overwrite original file
-  $script_name -f ./datasources/datasource_2_psqlha1v.int.ingv.it.json -p "MySecretPassword"
+  # IMPORTANT: Always use single quotes around passwords to prevent shell expansion
+  $script_name -f ./datasources/datasource_2_psqlha1v.int.ingv.it.json -p 'MySecretP@ssw0rd$123!'
   
   # Add password and save to new file
-  $script_name -f ./datasources/datasource_2_psqlha1v.int.ingv.it.json -p "MySecretPassword" -o ./datasources/updated_datasource.json
+  $script_name -f ./datasources/datasource_2_psqlha1v.int.ingv.it.json -p 'MySecretP@ssw0rd$123!' -o ./datasources/updated_datasource.json
   
   # Add password with verbose output
-  $script_name -f ./datasources/datasource_2_psqlha1v.int.ingv.it.json -p "MySecretPassword" -v
+  $script_name -f ./datasources/datasource_2_psqlha1v.int.ingv.it.json -p 'MySecretP@ssw0rd$123!' -v
 
 Security Note:
-  Be careful when specifying passwords in command line as they may be visible in shell history.
+  CRITICAL: Always use single quotes (') around passwords to prevent shell expansion of special
+  characters like $, !, *, etc. Without single quotes, the shell will interpret these characters
+  before passing them to the script, resulting in incorrect passwords.
+  
+  Examples:
+    CORRECT:   -p 'Hgt54$32hl_!'
+    INCORRECT: -p Hgt54$32hl_!  (shell expands $32)
+    INCORRECT: -p "Hgt54$32hl_!" (shell still expands $32)
+  
+  Also be careful when specifying passwords in command line as they may be visible in shell history.
   Consider using environment variables or reading from secure files.
 
 EOF

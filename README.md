@@ -94,7 +94,8 @@ Add passwords to datasource JSON files.
 
 ### Add Password
 ```bash
-./datasource_add_password.sh -f <file.json> -p <password>
+# IMPORTANT: Always use single quotes around passwords to prevent shell expansion
+./datasource_add_password.sh -f <file.json> -p 'password'
 ```
 
 ## Examples
@@ -119,8 +120,8 @@ Add passwords to datasource JSON files.
 # 1. Export
 ./datasource_export.sh -u $PROD_URL -t $PROD_TOKEN -o ./migration
 
-# 2. Add passwords
-./datasource_add_password.sh -f ./migration/datasource_2_PostgreSQL.json -p "$DB_PASSWORD"
+# 2. Add passwords (use single quotes to protect special characters)
+./datasource_add_password.sh -f ./migration/datasource_2_PostgreSQL.json -p 'MySecretP@ssw0rd$123!'
 
 # 3. Import
 ./datasource_import.sh -u $NEW_URL -t $NEW_TOKEN -o ./migration
@@ -154,9 +155,10 @@ BACKUP_DIR="./backups/$(date +%Y%m%d_%H%M%S)"
 - Script skips existing datasources automatically
 
 **Password issues**
-- Use single quotes for special characters: `'P@ssw0rd!#$'`
-- Use environment variables: `./datasource_add_password.sh -f file.json -p "$PASSWORD"`
-- Validate JSON: `jq empty file.json`
+- **CRITICAL: Always use single quotes** around passwords to prevent shell expansion of special characters (`$`, `!`, `*`, etc.)
+- Example: `./datasource_add_password.sh -f file.json -p 'P@ssw0rd!#$123'`
+- For environment variables, set with single quotes: `export PASSWORD='P@ssw0rd!#$123'`, then use: `-p "$PASSWORD"`
+- Validate JSON after: `jq empty file.json`
 
 ### Debug Mode
 ```bash

@@ -15,6 +15,9 @@ parse_common_options "export" "$@"
 # Set OUTPUT_DIR from parsed DIRECTORY variable
 OUTPUT_DIR="$DIRECTORY"
 
+# Remove trailing slash from GRAFANA_URL if present
+GRAFANA_URL="${GRAFANA_URL%/}"
+
 # Validate inputs
 info_msg "Starting Grafana datasource export..."
 info_msg "========================================"
@@ -37,7 +40,7 @@ validate_grafana_token "$GRAFANA_TOKEN"
 ensure_directory_exists "$OUTPUT_DIR" "true"
 
 # Test Grafana API connection
-test_grafana_connection "$GRAFANA_URL" "$GRAFANA_TOKEN"
+test_grafana_connection "${GRAFANA_URL}/api/datasources" "$GRAFANA_TOKEN"
 
 # Export datasources
 info_msg "Exporting datasources..."
@@ -47,10 +50,10 @@ TEMP_FILE=$(mktemp)
 verbose_msg "Created temporary file: $TEMP_FILE"
 
 # Build and execute curl command
-CURL_CMD="curl -s -H \"Authorization: Bearer [REDACTED]\" \"$GRAFANA_URL\""
+CURL_CMD="curl -s -H \"Authorization: Bearer [REDACTED]\" \"${GRAFANA_URL}/api/datasources\""
 verbose_cmd "$CURL_CMD"
 
-curl -s -H "Authorization: Bearer $GRAFANA_TOKEN" "$GRAFANA_URL" > "$TEMP_FILE"
+curl -s -H "Authorization: Bearer $GRAFANA_TOKEN" "${GRAFANA_URL}/api/datasources" > "$TEMP_FILE"
 
 # Check if the request was successful
 if [ $? -ne 0 ]; then
